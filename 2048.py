@@ -131,7 +131,7 @@ def show_direction(direc, board):
                         score += board[i][4 - j + shift]
                         board[i][3 - j + shift] = 0
                         merged[i][4 - j + shift] = True
-    return board
+    return board, merged
 
 
 # spawn in new pieces randomly when turns start
@@ -151,16 +151,25 @@ def new_pieces(board):
         full = True
     return board, full
 
+BUTTON_HEIGHT = 20
+BUTTON_WIDTH = 70
+
+button_rect = pygame.Rect(200, 70, BUTTON_WIDTH, BUTTON_HEIGHT)
+
 
 # draw background
 def draw_board():
     main_text = font2048.render(f'2048', True, colors['bg'])
-    pygame.draw.rect(screen, colors['bg'], [25, 110, 350, 350], 0, 10)
+    pygame.draw.rect(screen, colors['bg'], [25, 110, 350, 350])
     score_text = font.render(f'Score: {score}', True, colors['bg'])
     bestScore_text = font.render(f'High Score: {bestScore}', True, colors['bg'])
     screen.blit(main_text, (25, 10))
     screen.blit(score_text, (200, 10))
     screen.blit(bestScore_text, (200, 40))
+
+    pygame.draw.rect(screen, colors['bg'], button_rect,0,10)
+    button_text = pygame.font.SysFont(None, 20).render("Restart", True, (255, 250, 242))
+    screen.blit(button_text, (213, 73))
     pass
 
 
@@ -187,6 +196,35 @@ def draw_pieces(board):
                 pygame.draw.rect(screen, color, [j * 85 + 35, i * 85 + 120, 75, 75], 2, 5)
 
 
+def has_available_moves(board):
+    # Check if there are any empty cells
+    for row in board:
+        if 0 in row:
+            return True
+
+    # Check for adjacent cells with the same value
+    for i in range(len(board)):
+        for j in range(len(board[i])):
+            if i > 0 and board[i][j] == board[i-1][j]:
+                return True
+            if i < len(board)-1 and board[i][j] == board[i+1][j]:
+                return True
+            if j > 0 and board[i][j] == board[i][j-1]:
+                return True
+            if j < len(board[i])-1 and board[i][j] == board[i][j+1]:
+                return True
+
+    return False
+
+def board_full(board):
+    for row in board:
+        if 0 in row:
+            return False
+    return True
+
+def bot_play(board):
+    return True
+    # code for bot
 
 run = True
 while run:
@@ -194,14 +232,27 @@ while run:
     screen.fill((255, 250, 242))
     draw_board()
     draw_pieces(b_values)
+
+    if not has_available_moves(b_values):
+        if board_full(b_values):
+            game_over = True
+        else:
+            continue 
+
     if create or cnt < 2:
-        b_values, game_over = new_pieces(b_values)
-        create = False
-        cnt += 1
+        if has_available_moves(b_values):
+            if board_full(b_values):
+                create = False
+            else:
+                b_values, game_over = new_pieces(b_values)
+                create = False
+                cnt += 1
     if direc != '':
-        b_values = show_direction(direc, b_values)
-        direc = ''
-        create = True
+        b_values,merged = show_direction(direc, b_values)
+        if merged:
+            direc = ''
+            create = True
+        direct = ''
     if game_over:
         draw_over()
         if bestScore > init_high:
@@ -213,6 +264,16 @@ while run:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             run = False
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            if event.button == 1:  
+                mouse_pos = pygame.mouse.get_pos()
+                if button_rect.collidepoint(mouse_pos):  
+                    b_values = [[0 for _ in range(4)] for _ in range(4)]
+                    create = True
+                    cnt = 0
+                    score = 0
+                    direc = ''
+                    game_over = False
         if event.type == pygame.KEYUP:
             if event.key == pygame.K_UP:
                 direc = 'UP'
@@ -222,6 +283,9 @@ while run:
                 direc = 'LEFT'
             elif event.key == pygame.K_RIGHT:
                 direc = 'RIGHT'
+            elif event.key == pygame.K_SPACE:
+                bot_play(b_values)
+
 
             if game_over:
                 if event.key == pygame.K_RETURN:
