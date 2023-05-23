@@ -2,7 +2,7 @@ import pygame
 import random
 
 pygame.init()
-
+LEVEL = 6
 WIDTH = 400
 HEIGHT = 500
 screen = pygame.display.set_mode([WIDTH, HEIGHT])
@@ -11,8 +11,9 @@ timer = pygame.time.Clock()
 fps = 60
 font = pygame.font.Font('freesansbold.ttf', 20)
 font2048 = pygame.font.Font('freesansbold.ttf', 36)
+font_lvl = pygame.font.Font('freesansbold.ttf', 24)
 
-b_values = [[0 for _ in range(4)] for _ in range(4)]
+b_values = [[0 for _ in range(LEVEL)] for _ in range(LEVEL)]
 cnt = 0
 score = 0
 direc = ''
@@ -56,82 +57,74 @@ def draw_over():
 
 def show_direction(direc, board):
     global score
-    merged = [[False for _ in range(4)] for _ in range(4)]
+    merged = [[False for _ in range(LEVEL)] for _ in range(LEVEL)]
+
     if direc == 'UP':
-        for i in range(4):
-            for j in range(4):
-                shift = 0
-                if i > 0:
-                    for q in range(i):
-                        if board[q][j] == 0:
-                            shift += 1
-                    if shift > 0:
-                        board[i - shift][j] = board[i][j]
-                        board[i][j] = 0
-                    if board[i - shift - 1][j] == board[i - shift][j] \
-                            and not merged[i - shift][j] \
-                            and not merged[i - shift - 1][j]:
-                        board[i - shift - 1][j] *= 2
-                        score += board[i - shift - 1][j]
-                        board[i - shift][j] = 0
-                        merged[i - shift - 1][j] = True
+        for j in range(LEVEL):
+            for i in range(1, LEVEL):
+                if board[i][j] != 0:
+                    k = i
+                    while k > 0 and (board[k-1][j] == 0 or (board[k][j] == board[k-1][j] and not merged[k][j] and not merged[k-1][j])):
+                        if board[k-1][j] == 0:
+                            board[k-1][j] = board[k][j]
+                            board[k][j] = 0
+                        elif board[k][j] == board[k-1][j] and not merged[k][j] and not merged[k-1][j]:
+                            board[k-1][j] *= 2
+                            score += board[k-1][j]
+                            board[k][j] = 0
+                            merged[k-1][j] = True
+                        k -= 1
 
     elif direc == 'DOWN':
-        for i in range(3):
-            for j in range(4):
-                shift = 0
-                for q in range(i + 1):
-                    if board[3 - q][j] == 0:
-                        shift += 1
-                if shift > 0:
-                    board[2 - i + shift][j] = board[2 - i][j]
-                    board[2 - i][j] = 0
-                if 3 - i + shift <= 3:
-                    if board[2 - i + shift][j] == board[3 - i + shift][j] \
-                            and not merged[3 - i + shift][j] \
-                            and not merged[2 - i + shift][j]:
-                        board[3 - i + shift][j] *= 2
-                        score += board[3 - i + shift][j]
-                        board[2 - i + shift][j] = 0
-                        merged[3 - i + shift][j] = True
+        for j in range(LEVEL):
+            for i in range(LEVEL-2, -1, -1):
+                if board[i][j] != 0:
+                    k = i
+                    while k < LEVEL-1 and (board[k+1][j] == 0 or (board[k][j] == board[k+1][j] and not merged[k][j] and not merged[k+1][j])):
+                        if board[k+1][j] == 0:
+                            board[k+1][j] = board[k][j]
+                            board[k][j] = 0
+                        elif board[k][j] == board[k+1][j] and not merged[k][j] and not merged[k+1][j]:
+                            board[k+1][j] *= 2
+                            score += board[k+1][j]
+                            board[k][j] = 0
+                            merged[k+1][j] = True
+                        k += 1
 
     elif direc == 'LEFT':
-        for i in range(4):
-            for j in range(4):
-                shift = 0
-                for q in range(j):
-                    if board[i][q] == 0:
-                        shift += 1
-                if shift > 0:
-                    board[i][j - shift] = board[i][j]
-                    board[i][j] = 0
-                if board[i][j - shift] == board[i][j - shift - 1] \
-                        and not merged[i][j - shift - 1] \
-                        and not merged[i][j - shift]:
-                    board[i][j - shift - 1] *= 2
-                    score += board[i][j - shift - 1]
-                    board[i][j - shift] = 0
-                    merged[i][j - shift - 1] = True
+        for i in range(LEVEL):
+            for j in range(1, LEVEL):
+                if board[i][j] != 0:
+                    k = j
+                    while k > 0 and (board[i][k-1] == 0 or (board[i][k] == board[i][k-1] and not merged[i][k] and not merged[i][k-1])):
+                        if board[i][k-1] == 0:
+                            board[i][k-1] = board[i][k]
+                            board[i][k] = 0
+                        elif board[i][k] == board[i][k-1] and not merged[i][k] and not merged[i][k-1]:
+                            board[i][k-1] *= 2
+                            score += board[i][k-1]
+                            board[i][k] = 0
+                            merged[i][k-1] = True
+                        k -= 1
 
     elif direc == 'RIGHT':
-        for i in range(4):
-            for j in range(4):
-                shift = 0
-                for q in range(j):
-                    if board[i][3 - q] == 0:
-                        shift += 1
-                if shift > 0:
-                    board[i][3 - j + shift] = board[i][3 - j]
-                    board[i][3 - j] = 0
-                if 4 - j + shift <= 3:
-                    if board[i][4 - j + shift] == board[i][3 - j + shift] \
-                            and not merged[i][4 - j + shift] \
-                            and not merged[i][3 - j + shift]:
-                        board[i][4 - j + shift] *= 2
-                        score += board[i][4 - j + shift]
-                        board[i][3 - j + shift] = 0
-                        merged[i][4 - j + shift] = True
+        for i in range(LEVEL):
+            for j in range(LEVEL-2, -1, -1):
+                if board[i][j] != 0:
+                    k = j
+                    while k < LEVEL-1 and (board[i][k+1] == 0 or (board[i][k] == board[i][k+1] and not merged[i][k] and not merged[i][k+1])):
+                        if board[i][k+1] == 0:
+                            board[i][k+1] = board[i][k]
+                            board[i][k] = 0
+                        elif board[i][k] == board[i][k+1] and not merged[i][k] and not merged[i][k+1]:
+                            board[i][k+1] *= 2
+                            score += board[i][k+1]
+                            board[i][k] = 0
+                            merged[i][k+1] = True
+                        k += 1
+
     return board, merged
+
 
 
 # spawn in new pieces randomly when turns start
@@ -139,8 +132,8 @@ def new_pieces(board):
     count = 0
     full = False
     while any(0 in row for row in board) and count < 1:
-        row = random.randint(0, 3)
-        col = random.randint(0, 3)
+        row = random.randint(0, LEVEL-1)
+        col = random.randint(0, LEVEL-1)
         if board[row][col] == 0:
             count += 1
             if random.randint(1, 10) == 10:
@@ -151,11 +144,12 @@ def new_pieces(board):
         full = True
     return board, full
 
-BUTTON_HEIGHT = 20
-BUTTON_WIDTH = 70
+RESTART_HEIGHT = 20
+RESTART_WIDTH = 70
 
-button_rect = pygame.Rect(200, 70, BUTTON_WIDTH, BUTTON_HEIGHT)
-
+button_restart = pygame.Rect(240, 70, RESTART_WIDTH, RESTART_HEIGHT)
+button_bot = pygame.Rect(322, 70, 50, 20)
+button_level = pygame.Rect(25, 70, 65, 20)
 
 # draw background
 def draw_board():
@@ -167,16 +161,58 @@ def draw_board():
     screen.blit(score_text, (200, 10))
     screen.blit(bestScore_text, (200, 40))
 
-    pygame.draw.rect(screen, colors['bg'], button_rect,0,10)
-    button_text = pygame.font.SysFont(None, 20).render("Restart", True, (255, 250, 242))
-    screen.blit(button_text, (213, 73))
+    pygame.draw.rect(screen, colors['bg'], button_restart,0,10)
+    restart_text = pygame.font.SysFont(None, 20).render("Restart", True, (255, 250, 242))
+    screen.blit(restart_text, (253, 73))
+
+    pygame.draw.rect(screen, colors['bg'], button_bot,0,10)
+    bot_text = pygame.font.SysFont(None, 20).render("Bot", True, (255, 250, 242))
+    screen.blit(bot_text, (335, 73))
+
+    pygame.draw.rect(screen, colors['bg'], button_level,0,10)
+    bot_text = pygame.font.SysFont(None, 20).render("Level", True, (255, 250, 242))
+    screen.blit(bot_text, (38, 73))
     pass
 
 
+
+
+button_3 = pygame.Rect(115, 250, 60,30)
+button_4 = pygame.Rect(115, 290, 60,30)
+button_5 = pygame.Rect(217, 250, 60,30)
+button_6 = pygame.Rect(217, 290, 60,30)
+
+def draw_level():
+    pygame.draw.rect(screen, (255, 250, 242), [50, 230, 300, 105], 0, 10)
+    
+    pygame.draw.rect(screen, colors[8], button_3,0,10)
+    text_3 = font_lvl.render(f'3x3', True, (255, 250, 242))
+    screen.blit(text_3, (125, 253))
+
+    pygame.draw.rect(screen, colors[16], button_4,0,10)
+    text_4 = font_lvl.render(f'4x4', True, (255, 250, 242))
+    screen.blit(text_4, (125, 293))
+
+    pygame.draw.rect(screen, colors[32], button_5,0,10)
+    text_5 = font_lvl.render(f'5x5', True, (255, 250, 242))
+    screen.blit(text_5, (228, 253))
+
+    pygame.draw.rect(screen, colors[64], button_6,0,10)
+    text_6 = font_lvl.render(f'6x6', True, (255, 250, 242))
+    screen.blit(text_6, (228, 293))
+    
+
+
+x = 25
+y = 110
 # draw pieces
 def draw_pieces(board):
-    for i in range(4):
-        for j in range(4):
+    cell_size = 350 // LEVEL
+    padding = cell_size // 10  # Размер отступа между ячейками
+    cell_width = (350 - (LEVEL + 1) * padding) // LEVEL
+    cell_height = (350 - (LEVEL + 1) * padding) // LEVEL
+    for i in range(LEVEL):
+        for j in range(LEVEL):
             value = board[i][j]
             if value > 8:
                 value_color = colors['light']
@@ -185,16 +221,18 @@ def draw_pieces(board):
             if value <= 2048:
                 color = colors[value]
             else:
-                color = colors[black]
-            pygame.draw.rect(screen, color, [j * 85 + 35, i * 85 + 120, 75, 75], 0, 5)
+                color = colors['black']
+            cell_x = 1+25 + padding + j * (cell_width + padding)  # Вычисление координаты X верхнего левого угла ячейки
+            cell_y = 1+110 + padding + i * (cell_height + padding)  # Вычисление координаты Y верхнего левого угла ячейки
+
+            pygame.draw.rect(screen, color, [cell_x, cell_y, cell_width, cell_height], 0, 5)
             if value > 0:
                 value_len = len(str(value))
-                font = pygame.font.Font('freesansbold.ttf', 48 - (5 * value_len))
-                value_text = font.render(str(value), True, value_color)
-                text_rect = value_text.get_rect(center=(j * 85 + 72, i * 85 + 157))
+                font2 = pygame.font.Font('freesansbold.ttf', 48 - (6 * value_len))
+                value_text = font2.render(str(value), True, value_color)
+                text_rect = value_text.get_rect(center=(cell_x + cell_width // 2, cell_y + cell_height // 2))
                 screen.blit(value_text, text_rect)
-                pygame.draw.rect(screen, color, [j * 85 + 35, i * 85 + 120, 75, 75], 2, 5)
-
+                pygame.draw.rect(screen, color, [cell_x, cell_y, cell_width, cell_height], 2, 5)
 
 def has_available_moves(board):
     # Check if there are any empty cells
@@ -222,20 +260,31 @@ def board_full(board):
             return False
     return True
 
-def bot_play(board):
-    return True
-    # code for bot
 
+  
+
+
+
+bot = False
 run = True
+directions = ['UP', 'DOWN', 'LEFT', 'RIGHT']
+level = False
 while run:
     timer.tick(fps)
     screen.fill((255, 250, 242))
     draw_board()
     draw_pieces(b_values)
+    
+    if bot:
+        direc = random.choice(directions)
+        pygame.time.wait(200)
+    if level:
+        draw_level()
 
     if not has_available_moves(b_values):
         if board_full(b_values):
             game_over = True
+            bot = False
         else:
             continue 
 
@@ -249,9 +298,8 @@ while run:
                 cnt += 1
     if direc != '':
         b_values,merged = show_direction(direc, b_values)
-        if merged:
-            direc = ''
-            create = True
+        direc = ''
+        create = True
         direct = ''
     if game_over:
         draw_over()
@@ -267,13 +315,37 @@ while run:
         elif event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 1:  
                 mouse_pos = pygame.mouse.get_pos()
-                if button_rect.collidepoint(mouse_pos):  
-                    b_values = [[0 for _ in range(4)] for _ in range(4)]
+                if button_restart.collidepoint(mouse_pos):  
+                    b_values = [[0 for _ in range(LEVEL)] for _ in range(LEVEL)]
                     create = True
                     cnt = 0
                     score = 0
                     direc = ''
                     game_over = False
+                    bot = False
+                if button_bot.collidepoint(mouse_pos):  
+                    if bot:
+                        bot = False
+                    else:
+                        bot = True
+                if button_level.collidepoint(mouse_pos):  
+                    if level:
+                        level = False
+                    else:
+                        level = True
+                if button_3.collidepoint(mouse_pos):  
+                    LEVEL = 3
+                    level = False
+                if button_4.collidepoint(mouse_pos):  
+                    LEVEL = 4
+                    level = False
+                if button_5.collidepoint(mouse_pos):  
+                    LEVEL = 5
+                    level = False
+                if button_6.collidepoint(mouse_pos):  
+                    LEVEL = 6
+                    level = False
+
         if event.type == pygame.KEYUP:
             if event.key == pygame.K_UP:
                 direc = 'UP'
@@ -283,13 +355,14 @@ while run:
                 direc = 'LEFT'
             elif event.key == pygame.K_RIGHT:
                 direc = 'RIGHT'
-            elif event.key == pygame.K_SPACE:
-                bot_play(b_values)
+            
+       
+
 
 
             if game_over:
                 if event.key == pygame.K_RETURN:
-                    b_values = [[0 for _ in range(4)] for _ in range(4)]
+                    b_values = [[0 for _ in range(LEVEL)] for _ in range(LEVEL)]
                     create = True
                     cnt = 0
                     score = 0
