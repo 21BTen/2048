@@ -1,8 +1,10 @@
 import pygame
 import random
+import pygame.mixer
 
 pygame.init()
-LEVEL = 6
+pygame.mixer.init()
+LEVEL = 4
 WIDTH = 400
 HEIGHT = 500
 screen = pygame.display.set_mode([WIDTH, HEIGHT])
@@ -17,6 +19,8 @@ b_values = [[0 for _ in range(LEVEL)] for _ in range(LEVEL)]
 cnt = 0
 score = 0
 direc = ''
+sound = False
+music = pygame.mixer.Sound("Clown.mp3")
 
 # 2048 colors
 colors = {0: (179, 175, 167),
@@ -45,6 +49,14 @@ bestScore = init_high
 
 game_over = False
 create = True
+
+def toggle_sound():
+    global sound
+    sound = not sound
+    if sound:
+        music.play(-1)  # Воспроизвести музыку в цикле
+    else:
+        music.stop()
 
 # draw game over
 def draw_over():
@@ -144,34 +156,38 @@ def new_pieces(board):
         full = True
     return board, full
 
-RESTART_HEIGHT = 20
+RESTART_HEIGHT = 30
 RESTART_WIDTH = 70
 
 button_restart = pygame.Rect(240, 70, RESTART_WIDTH, RESTART_HEIGHT)
-button_bot = pygame.Rect(322, 70, 50, 20)
-button_level = pygame.Rect(25, 70, 65, 20)
-
+button_bot = pygame.Rect(322, 70, 50, 30)
+button_level = pygame.Rect(25, 70, 65, 30)
+button_sound = pygame.Rect(105, 70, 80, 30)
 # draw background
 def draw_board():
-    main_text = font2048.render(f'2048', True, colors['bg'])
+    main_text = font2048.render(f'2048', True, (0,0,0))
     pygame.draw.rect(screen, colors['bg'], [25, 110, 350, 350])
     score_text = font.render(f'Score: {score}', True, colors['bg'])
     bestScore_text = font.render(f'High Score: {bestScore}', True, colors['bg'])
     screen.blit(main_text, (25, 10))
-    screen.blit(score_text, (200, 10))
-    screen.blit(bestScore_text, (200, 40))
+    screen.blit(score_text, (130, 10))
+    screen.blit(bestScore_text, (130, 40))
 
-    pygame.draw.rect(screen, colors['bg'], button_restart,0,10)
+    pygame.draw.rect(screen, (250, 128, 114), button_restart,0,10)
     restart_text = pygame.font.SysFont(None, 20).render("Restart", True, (255, 250, 242))
-    screen.blit(restart_text, (253, 73))
+    screen.blit(restart_text, (253, 78))
 
-    pygame.draw.rect(screen, colors['bg'], button_bot,0,10)
+    pygame.draw.rect(screen, (233, 150, 122), button_bot,0,10)
     bot_text = pygame.font.SysFont(None, 20).render("Bot", True, (255, 250, 242))
-    screen.blit(bot_text, (335, 73))
+    screen.blit(bot_text, (335, 78))
 
-    pygame.draw.rect(screen, colors['bg'], button_level,0,10)
-    bot_text = pygame.font.SysFont(None, 20).render("Level", True, (255, 250, 242))
-    screen.blit(bot_text, (38, 73))
+    pygame.draw.rect(screen, (240, 128, 128), button_level,0,10)
+    level_text = pygame.font.SysFont(None, 20).render("Level", True, (255, 250, 242))
+    screen.blit(level_text, (38, 78))
+
+    pygame.draw.rect(screen, (205, 92, 92), button_sound,0,10)
+    sound_text = pygame.font.SysFont(None, 20).render("Sound On" if sound else "Sound Off", True, (255, 250, 242))
+    screen.blit(sound_text, (113, 78))
     pass
 
 
@@ -335,16 +351,47 @@ while run:
                         level = True
                 if button_3.collidepoint(mouse_pos):  
                     LEVEL = 3
+                    b_values = [[0 for _ in range(LEVEL)] for _ in range(LEVEL)]
+                    create = True
+                    cnt = 0
+                    score = 0
+                    direc = ''
+                    game_over = False
                     level = False
                 if button_4.collidepoint(mouse_pos):  
                     LEVEL = 4
+                    b_values = [[0 for _ in range(LEVEL)] for _ in range(LEVEL)]
+                    create = True
+                    cnt = 0
+                    score = 0
+                    direc = ''
+                    game_over = False
                     level = False
                 if button_5.collidepoint(mouse_pos):  
                     LEVEL = 5
+                    b_values = [[0 for _ in range(LEVEL)] for _ in range(LEVEL)]
+                    create = True
+                    cnt = 0
+                    score = 0
+                    direc = ''
+                    game_over = False
                     level = False
                 if button_6.collidepoint(mouse_pos):  
                     LEVEL = 6
+                    b_values = [[0 for _ in range(LEVEL)] for _ in range(LEVEL)]
+                    create = True
+                    cnt = 0
+                    score = 0
+                    direc = ''
+                    game_over = False
                     level = False
+                if button_sound.collidepoint(mouse_pos):  
+                    if sound:
+                        music.stop()
+                        sound = False
+                    else:
+                        music.play(-1)
+                        sound = True
 
         if event.type == pygame.KEYUP:
             if event.key == pygame.K_UP:
@@ -368,7 +415,6 @@ while run:
                     score = 0
                     direc = ''
                     game_over = False
-
     if score > bestScore:
         bestScore = score
 
